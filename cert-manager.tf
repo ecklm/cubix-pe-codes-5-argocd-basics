@@ -21,6 +21,8 @@ resource "helm_release" "cert_manager" {
 
   atomic          = true
   cleanup_on_fail = true
+
+  depends_on = [time_sleep.wait_for_kube_admin]
 }
 
 resource "helm_release" "letsencrypt_cluster_issuer" {

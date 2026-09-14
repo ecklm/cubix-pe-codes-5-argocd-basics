@@ -62,3 +62,9 @@ resource "azurerm_role_assignment" "kube_admin" {
   role_definition_name = "Azure Kubernetes Service RBAC Cluster Admin"
   principal_id         = each.key
 }
+
+resource "time_sleep" "wait_for_kube_admin" {
+  depends_on = [azurerm_role_assignment.kube_admin]
+
+  create_duration = "60s"
+}

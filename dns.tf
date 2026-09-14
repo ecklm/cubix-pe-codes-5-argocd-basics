@@ -96,5 +96,6 @@ resource "helm_release" "external_dns" {
   depends_on = [
     azurerm_federated_identity_credential.external_dns,
     azurerm_role_assignment.external_dns_zone_contributor,
+    time_sleep.wait_for_kube_admin,
   ]
 }
