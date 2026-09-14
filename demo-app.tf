@@ -14,14 +14,20 @@ resource "helm_release" "demo-app" {
         metadata:
           name: colors
           namespace: argocd
+          finalizers:
+            - resources-finalizer.argocd.argoproj.io
         spec:
           destination:
             namespace: colors
             server: https://kubernetes.default.svc
-          project: default
+          project: product
           syncPolicy:
             syncOptions:
             - CreateNamespace=true
+            automated:
+              enabled: true
+              selfHeal: true
+              prune: true
           source:
             path: .
             repoURL: oci://docker.io/ecklm/colors-demo-app
@@ -40,6 +46,7 @@ resource "helm_release" "demo-app" {
 
   depends_on = [
     time_sleep.wait_for_kube_admin,
-    helm_release.argocd
+    helm_release.argocd,
+    helm_release.argocd-projects
   ]
 }
