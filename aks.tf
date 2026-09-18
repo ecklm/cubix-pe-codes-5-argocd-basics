@@ -3,7 +3,7 @@ data "azurerm_client_config" "current" {}
 locals {
   project_name = "project-x"
   environment  = "sbx"
-  aks_admins = toset([
+  platform_admins = toset([
     # Whoever is running (pipeline?). Will flap, though.
     data.azurerm_client_config.current.object_id,
     # Your personal user ID: az ad signed-in-user show --query id -o tsv
@@ -55,12 +55,21 @@ resource "azurerm_kubernetes_cluster" "this" {
   local_account_disabled = true
 }
 
-resource "azurerm_role_assignment" "kube_admin" {
-  for_each = local.aks_admins
+resource "azuread_group" "platform_admins" {
+  display_name     = "${local.project_name}-${local.environment}-platform-admins"
+  security_enabled = true
+}
 
+resource "azuread_group_member" "platform_admin_members" {
+  for_each         = local.platform_admins
+  group_object_id  = azuread_group.platform_admins.object_id
+  member_object_id = each.key
+}
+
+resource "azurerm_role_assignment" "kube_admin" {
   scope                = resource.azurerm_kubernetes_cluster.this.id
   role_definition_name = "Azure Kubernetes Service RBAC Cluster Admin"
-  principal_id         = each.key
+  principal_id         = azuread_group.platform_admins.object_id
 }
 
 resource "time_sleep" "wait_for_kube_admin" {
