@@ -45,7 +45,7 @@ resource "helm_release" "letsencrypt_cluster_issuer" {
           }
           spec = {
             acme = {
-              email  = "ecklm@ecklm.com"
+              email  = "ecklm@cubix-pe.hu"
               server = "https://acme-v02.api.letsencrypt.org/directory"
               privateKeySecretRef = {
                 name = "letsencrypt-account-key"
