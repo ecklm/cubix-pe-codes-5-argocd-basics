@@ -1,27 +1,14 @@
-data "azurerm_client_config" "current" {}
-
-locals {
-  project_name = "project-x"
-  environment  = "sbx"
-  platform_admins = toset([
-    # Whoever is running (pipeline?). Will flap, though.
-    data.azurerm_client_config.current.object_id,
-    # Your personal user ID: az ad signed-in-user show --query id -o tsv
-    "1263d89e-4b6d-44cf-9149-75c19a3412e5",
-  ])
-}
-
-resource "azurerm_resource_group" "this" {
-  name     = "${local.project_name}-${local.environment}-aks"
+resource "azurerm_resource_group" "aks" {
+  name     = "${local.resource_basename}-aks"
   location = var.location
 }
 
-resource "azurerm_kubernetes_cluster" "this" {
-  name                = "${local.project_name}-${local.environment}"
-  resource_group_name = azurerm_resource_group.this.name
-  location            = azurerm_resource_group.this.location
-  dns_prefix          = "${local.project_name}-${local.environment}"
-  node_resource_group = "${azurerm_resource_group.this.name}-nodes"
+resource "azurerm_kubernetes_cluster" "aks" {
+  name                = local.resource_basename
+  resource_group_name = azurerm_resource_group.aks.name
+  location            = azurerm_resource_group.aks.location
+  dns_prefix          = local.resource_basename
+  node_resource_group = "${azurerm_resource_group.aks.name}-nodes"
 
   oidc_issuer_enabled       = true
   workload_identity_enabled = true
@@ -56,7 +43,7 @@ resource "azurerm_kubernetes_cluster" "this" {
 }
 
 resource "azuread_group" "platform_admins" {
-  display_name     = "${local.project_name}-${local.environment}-platform-admins"
+  display_name     = "${local.resource_basename}-platform-admins"
   security_enabled = true
 }
 
@@ -67,7 +54,7 @@ resource "azuread_group_member" "platform_admin_members" {
 }
 
 resource "azurerm_role_assignment" "kube_admin" {
-  scope                = resource.azurerm_kubernetes_cluster.this.id
+  scope                = resource.azurerm_kubernetes_cluster.aks.id
   role_definition_name = "Azure Kubernetes Service RBAC Cluster Admin"
   principal_id         = azuread_group.platform_admins.object_id
 }

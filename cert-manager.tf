@@ -1,6 +1,4 @@
 resource "helm_release" "cert_manager" {
-  provider = helm.sbx
-
   name             = "cert-manager"
   repository       = "https://charts.jetstack.io"
   chart            = "cert-manager"
@@ -26,8 +24,6 @@ resource "helm_release" "cert_manager" {
 }
 
 resource "helm_release" "letsencrypt_cluster_issuer" {
-  provider = helm.sbx
-
   name       = "letsencrypt-cluster-issuer"
   repository = "https://bedag.github.io/helm-charts"
   chart      = "raw"

@@ -1,6 +1,4 @@
 resource "helm_release" "demo-app" {
-  provider = helm.sbx
-
   name             = "colors"
   repository       = "oci://docker.io/ecklm"
   chart            = "colors-demo-app"
